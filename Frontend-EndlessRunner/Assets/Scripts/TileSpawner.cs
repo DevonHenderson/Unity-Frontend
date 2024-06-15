@@ -1,16 +1,17 @@
 using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 namespace EndlessRunner {
     public class TileSpawner : MonoBehaviour
     {
-        [SerializeField] private GameObject sraightTile;
+        [SerializeField] private GameObject straightTile;
         [SerializeField] private List<GameObject> turnTiles;
         [SerializeField] private List<GameObject> obstacles;
 
         [SerializeField] private int tileStartCount = 10; //Number of tiles ahead of the player at the start of a new game
         [SerializeField] private int minTilesAhead = 3;
-        [SerializeField] private int maxTilesAhead = 15;
+        [SerializeField] private int maxTilesAhead = 10;
 
         private Vector3 currentTileLocation = Vector3.zero;
         private Vector3 currentTileDirection = Vector3.forward;
@@ -30,10 +31,12 @@ namespace EndlessRunner {
             //Spawn tiles in the starting area
             for (int i = 0; i < tileStartCount; i++)
             {
-                SpawnTile(sraightTile.GetComponent<Tile>());
+                SpawnTile(straightTile.GetComponent<Tile>());
             }
 
-            SpawnTile(SelectRandomInList(turnTiles).GetComponent<Tile>());
+            //SpawnTile(SelectRandomInList(turnTiles).GetComponent<Tile>());
+            SpawnTile(turnTiles[0].GetComponent<Tile>());
+            AddNewDirection(Vector3.left);
         }
 
         void SpawnTile(Tile tile, bool spawnObstacle = false)
@@ -43,12 +46,48 @@ namespace EndlessRunner {
 
             prevTile = GameObject.Instantiate(tile.gameObject, currentTileLocation, newTileRotation);
             currentTiles.Add(prevTile);
-            currentTileLocation += Vector3.Scale(prevTile.GetComponent<Renderer>().bounds.size, currentTileDirection); //Set next tile spawn to be at end of current tile bounds
+
+            //Make sure tiles in new direction line up with path
+            if (tile.type == TileType.STRAIGHT)
+            {
+                currentTileLocation += Vector3.Scale(prevTile.GetComponent<Renderer>().bounds.size, currentTileDirection); //Set next tile spawn to be at end of current tile bounds
+            }
         }
 
         private GameObject SelectRandomInList(List <GameObject> list)
         {
             return list[Random.Range(0, list.Count)];
+        }
+
+        //Used to generate tiles after turning in a direction
+        public void AddNewDirection(Vector3 direction)
+        {
+            currentTileDirection = direction;
+            //DeletePreviousTiles(); //Remove other tiles to help performance
+
+            Vector3 tileScale;
+
+            //Calculates any new spawning offset for specific turn tile types
+            if (prevTile.GetComponent<Tile>().type == TileType.SIDEWAYS)
+            {
+                tileScale = Vector3.Scale(prevTile.GetComponent<Renderer>().bounds.size / 2 + (Vector3.one * straightTile.GetComponent<BoxCollider>().size.z / 2), currentTileDirection);
+            }
+            else //Left and right tiles
+            {
+                tileScale = Vector3.Scale((prevTile.GetComponent<Renderer>().bounds.size - (Vector3.one * 2)) + (Vector3.one * straightTile.GetComponent<BoxCollider>().size.z / 2), currentTileDirection);
+            }
+
+            currentTileLocation += tileScale;
+
+            //Number of straight tiles before another turn
+            int currentPathLength = Random.Range(minTilesAhead, maxTilesAhead);
+
+            for (int i = 0; i < currentPathLength; i++)
+            {
+                SpawnTile(straightTile.GetComponent<Tile>(), (i == 0) ? false : true); //Make sure obstacles dont spawn immediately after turns
+            }
+
+            SpawnTile(SelectRandomInList(turnTiles).GetComponent<Tile>());
         }
     }
 }
