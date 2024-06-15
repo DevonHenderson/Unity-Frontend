@@ -84,9 +84,6 @@ public class PlayerController : MonoBehaviour
         secondRaycast += transform.forward * 0.2f; //Set ahead of player
         firstRaycast -= transform.forward * 0.2f; //Set behind player
 
-        Debug.DrawLine(firstRaycast, Vector3.down, Color.green, 2f);
-        Debug.DrawLine(secondRaycast, Vector3.down, Color.cyan, 2f);
-
         //Check both raycasts for ground collision
         if (Physics.Raycast(firstRaycast, Vector3.down, out RaycastHit hitBehind, length, groundLayer) || 
             Physics.Raycast(secondRaycast, Vector3.down, out RaycastHit hitAhead, length, groundLayer))
