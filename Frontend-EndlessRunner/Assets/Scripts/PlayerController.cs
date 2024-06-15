@@ -36,7 +36,6 @@ namespace EndlessRunner {
         private bool isSliding = false;
 
         [SerializeField] private UnityEvent<Vector3> turnEvent;
-        
 
         private void Awake()
         {
@@ -124,32 +123,18 @@ namespace EndlessRunner {
 
         private void Turn(float turnValue, Vector3 turnPosition)
         {
-            //Debug.Log("Turn called with value: " + turnValue + " and turnPosition: " + turnPosition);
-
             // Move the player to the correct position after turning
             Vector3 tempPlayerPosition = new Vector3(turnPosition.x, transform.position.y, turnPosition.z);
             characterController.enabled = false;
             transform.position = tempPlayerPosition;
-            //Debug.Log("Player position updated to: " + transform.position);
+            characterController.enabled = true;
 
-            // Rotate the player to the new direction
-            Quaternion targetRotation = Quaternion.Euler(0, 90 * turnValue, 0);
-            //Debug.Log("transform.rotation before: " + transform.rotation);
-            //Debug.Log("targetRotation: " + targetRotation.eulerAngles);
+            Quaternion targetRotation = transform.rotation * Quaternion.Euler(0, 90 * turnValue, 0);
             transform.rotation = targetRotation;
-            //Debug.Log("transform.rotation after: " + transform.rotation.eulerAngles);
 
             // Update the stored direction that the player is moving along
-            movementDirection = transform.forward;
-            //Debug.Log("movementDirection: " + movementDirection);
-
-            // Re-enable the character controller after movement and rotation
-            characterController.enabled = true;
-        }
-
-        private void LateUpdate()
-        {
-            Debug.Log("LateUpdate - transform.rotation: " + transform.rotation.eulerAngles);
+            movementDirection = transform.forward.normalized;
+            
         }
 
         //Handle behaviour for jump input
