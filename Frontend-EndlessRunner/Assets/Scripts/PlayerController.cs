@@ -5,20 +5,26 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
+    [Header("Player Movement")]
     [SerializeField] private float initalPlayerSpeed = 4f;
     [SerializeField] private float maximumPlayerSpeed = 30f;
     [SerializeField] private float speedIncreaseRate = .1f;
+    private float playerSpeed;
+    private Vector3 movementDirection = Vector3.forward;
+
+    [Header("Player Jumping")]
     [SerializeField] private float jumpHeight = 1f;
     [SerializeField] private float initialGravity = -9.81f;
     [SerializeField] private LayerMask groundLayer;
-    
     private float currentGravity;
-    private float playerSpeed;
-    private Vector3 movementDirection = Vector3.forward;
+    private Vector3 playerVelocity;
+
+    [Header("Player Input System")]
     private PlayerInput playerInput;
     private InputAction turnAction;
     private InputAction jumpAction;
     private InputAction slideAction;
+    
     private CharacterController characterController;
 
     private void Awake()
@@ -58,7 +64,12 @@ public class PlayerController : MonoBehaviour
     //Handle behaviour for jump input
     private void PlayerJump(InputAction.CallbackContext context)
     {
-
+        //Only jump when grounded
+        if (IsGrounded())
+        {
+            playerVelocity.y += Mathf.Sqrt(jumpHeight * currentGravity * -3f);
+            characterController.Move(playerVelocity * Time.deltaTime);
+        }
     }
     //Handle behaviour for slide input
     private void PlayerSlide(InputAction.CallbackContext context)
@@ -66,14 +77,23 @@ public class PlayerController : MonoBehaviour
 
     }
 
-    //Move the player in the current direction
+    
     private void Update()
     {
-        characterController.Move(transform.forward * playerSpeed * Time.deltaTime);
+        characterController.Move(transform.forward * playerSpeed * Time.deltaTime); //Move the player cosntantly in the current direction
+
+        //Make sure player stays on top of ground
+        if (IsGrounded() && playerVelocity.y < 0)
+        {
+            playerVelocity.y = 0;
+        }
+
+        playerVelocity.y += currentGravity * Time.deltaTime;
+        characterController.Move(playerVelocity * Time.deltaTime);
     }
 
     //Perform grounded check in two locations (behind/ahead of player)
-    private bool IsGrounded(float length)
+    private bool IsGrounded(float length = 0.2f)
     {
         //Set raycast origin point to base of player
         Vector3 firstRaycast = transform.position;
