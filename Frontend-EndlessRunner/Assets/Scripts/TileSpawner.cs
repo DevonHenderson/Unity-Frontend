@@ -38,7 +38,10 @@ namespace EndlessRunner {
 
         void SpawnTile(Tile tile, bool spawnObstacle = false)
         {
-            prevTile = GameObject.Instantiate(tile.gameObject, currentTileLocation, Quaternion.identity);
+            //Make sure tile has correct rotation to other tiles
+            Quaternion newTileRotation = tile.gameObject.transform.rotation * Quaternion.LookRotation(currentTileDirection, Vector3.up);
+
+            prevTile = GameObject.Instantiate(tile.gameObject, currentTileLocation, newTileRotation);
             currentTiles.Add(prevTile);
             currentTileLocation += Vector3.Scale(prevTile.GetComponent<Renderer>().bounds.size, currentTileDirection); //Set next tile spawn to be at end of current tile bounds
         }
