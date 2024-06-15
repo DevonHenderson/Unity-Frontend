@@ -71,7 +71,7 @@ namespace EndlessRunner {
 
         private void Update()
         {
-            characterController.Move(movementDirection * playerSpeed * Time.deltaTime); //Move the player cosntantly in the current direction
+            characterController.Move(transform.forward * playerSpeed * Time.deltaTime); //Move the player cosntantly in the current direction
 
             //Make sure player stays on top of ground
             if (IsGrounded() && playerVelocity.y < 0)
@@ -124,23 +124,32 @@ namespace EndlessRunner {
 
         private void Turn(float turnValue, Vector3 turnPosition)
         {
-            //Move the player to the correct position after turning
+            //Debug.Log("Turn called with value: " + turnValue + " and turnPosition: " + turnPosition);
+
+            // Move the player to the correct position after turning
             Vector3 tempPlayerPosition = new Vector3(turnPosition.x, transform.position.y, turnPosition.z);
             characterController.enabled = false;
             transform.position = tempPlayerPosition;
-            characterController.enabled = true;
+            //Debug.Log("Player position updated to: " + transform.position);
 
-            //Rotate the player to the new location direction
-            Quaternion targetRotation = transform.rotation * Quaternion.Euler(0, 90 * turnValue, 0);
-            Debug.Log("TurnValue" + turnValue);
-            Debug.Log("transform.rotation after" + transform.rotation);
-            Debug.Log("targetRotation" + targetRotation);
+            // Rotate the player to the new direction
+            Quaternion targetRotation = Quaternion.Euler(0, 90 * turnValue, 0);
+            //Debug.Log("transform.rotation before: " + transform.rotation);
+            //Debug.Log("targetRotation: " + targetRotation.eulerAngles);
             transform.rotation = targetRotation;
+            //Debug.Log("transform.rotation after: " + transform.rotation.eulerAngles);
 
-            //Update the stored direction that the player is moving along
+            // Update the stored direction that the player is moving along
             movementDirection = transform.forward;
-            Debug.Log("transform.rotation after" + transform.rotation);
-            Debug.Log("movementDirection" + movementDirection);
+            //Debug.Log("movementDirection: " + movementDirection);
+
+            // Re-enable the character controller after movement and rotation
+            characterController.enabled = true;
+        }
+
+        private void LateUpdate()
+        {
+            Debug.Log("LateUpdate - transform.rotation: " + transform.rotation.eulerAngles);
         }
 
         //Handle behaviour for jump input
