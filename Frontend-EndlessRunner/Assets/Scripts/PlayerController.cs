@@ -71,13 +71,12 @@ namespace EndlessRunner {
 
         private void Update()
         {
-            characterController.Move(transform.position * playerSpeed * Time.deltaTime); //Move the player cosntantly in the current direction
-            Debug.Log("Update called, movementDirection: " + movementDirection);
+            characterController.Move(movementDirection * playerSpeed * Time.deltaTime); //Move the player cosntantly in the current direction
 
             //Make sure player stays on top of ground
             if (IsGrounded() && playerVelocity.y < 0)
             {
-                playerVelocity.y = 0f;
+                playerVelocity.y = 0;
             }
 
             playerVelocity.y += currentGravity * Time.deltaTime;
@@ -87,7 +86,6 @@ namespace EndlessRunner {
         //Handle behaviour for turn input
         private void PlayerTurn(InputAction.CallbackContext context)
         {
-            Debug.Log("PlayerTurn called with value: " + context.ReadValue<float>());
             Vector3? turnPosition = CheckTurn(context.ReadValue<float>());
 
             //Player not standing on tile with turn pivot
@@ -97,11 +95,52 @@ namespace EndlessRunner {
             }
 
             Vector3 targetDirection = Quaternion.AngleAxis(90 * context.ReadValue<float>(), Vector3.up) * movementDirection;
-            Debug.Log("Target direction: " + targetDirection);
-
             turnEvent.Invoke(targetDirection);
 
             Turn(context.ReadValue<float>(), turnPosition.Value);
+        }
+
+        //Returns the type of turn prefab the player is moving on
+        private Vector3? CheckTurn(float turnValue)
+        {
+            //Check for pivot point colliders on 'Turn' prefabs
+            Collider[] hitColliders = Physics.OverlapSphere(transform.position, .1f, turnLayer);
+            if (hitColliders.Length != 0)
+            {
+                Tile tile = hitColliders[0].transform.parent.GetComponent<Tile>();
+                TileType type = tile.type;
+
+                //Check if player has used correct input for the type of turn
+                //eg. A key = -1 value from PlayerTurn context and standing on prefab marked with LEFT pivot point
+                if ((type == TileType.LEFT && turnValue == -1) ||
+                    (type == TileType.RIGHT && turnValue == 1) ||
+                    (type == TileType.SIDEWAYS))
+                {
+                    return tile.pivot.position;
+                }
+            }
+            return null;
+        }
+
+        private void Turn(float turnValue, Vector3 turnPosition)
+        {
+            //Move the player to the correct position after turning
+            Vector3 tempPlayerPosition = new Vector3(turnPosition.x, transform.position.y, turnPosition.z);
+            characterController.enabled = false;
+            transform.position = tempPlayerPosition;
+            characterController.enabled = true;
+
+            //Rotate the player to the new location direction
+            Quaternion targetRotation = transform.rotation * Quaternion.Euler(0, 90 * turnValue, 0);
+            Debug.Log("TurnValue" + turnValue);
+            Debug.Log("transform.rotation after" + transform.rotation);
+            Debug.Log("targetRotation" + targetRotation);
+            transform.rotation = targetRotation;
+
+            //Update the stored direction that the player is moving along
+            movementDirection = transform.forward;
+            Debug.Log("transform.rotation after" + transform.rotation);
+            Debug.Log("movementDirection" + movementDirection);
         }
 
         //Handle behaviour for jump input
@@ -121,6 +160,27 @@ namespace EndlessRunner {
             {
                 StartCoroutine(Slide());
             }
+        }
+
+        //Perform grounded check in two locations (behind/ahead of player)
+        private bool IsGrounded(float length = 0.2f)
+        {
+            //Set raycast origin point to base of player
+            Vector3 firstRaycast = transform.position;
+            firstRaycast.y -= characterController.height / 2; //Set to bottom of player
+            firstRaycast.y += 0.1f;
+
+            Vector3 secondRaycast = firstRaycast;
+            secondRaycast += transform.forward * 0.2f; //Set ahead of player
+            firstRaycast -= transform.forward * 0.2f; //Set behind player
+
+            //Check both raycasts for ground collision
+            if (Physics.Raycast(firstRaycast, Vector3.down, out RaycastHit hitBehind, length, groundLayer) ||
+                Physics.Raycast(secondRaycast, Vector3.down, out RaycastHit hitAhead, length, groundLayer))
+            {
+                return true;
+            }
+            return false;
         }
 
         private IEnumerator Slide()
@@ -145,71 +205,6 @@ namespace EndlessRunner {
             characterController.center = originalControllerCentre;
             
             isSliding = false;
-        }
-
-        //Returns the type of turn prefab the player is moving on
-        private Vector3? CheckTurn(float turnValue)
-        {
-            Debug.Log("CheckTurn called with value: " + turnValue);
-            //Check for pivot point colliders on 'Turn' prefabs
-            Collider[] hitColliders = Physics.OverlapSphere(transform.position, .1f, turnLayer);
-            if (hitColliders.Length != 0)
-            {
-                Tile tile = hitColliders[0].transform.parent.GetComponent<Tile>();
-                TileType type = tile.type;
-
-                //Check if player has used correct input for the type of turn
-                //eg. A key = -1 value from PlayerTurn context and standing on prefab marked with LEFT pivot point
-                if ((type == TileType.LEFT && turnValue == -1) ||
-                    (type == TileType.RIGHT && turnValue == 1) ||
-                    (type == TileType.SIDEWAYS))
-                {
-                    Debug.Log("Valid turn detected, pivot position: " + tile.pivot.position);
-                    return tile.pivot.position;
-                }
-            }
-            return null;
-        }
-
-        private void Turn(float turnValue, Vector3 turnPosition)
-        {
-            Debug.Log("Turn called with value: " + turnValue + " and turnPosition: " + turnPosition);
-            //Move the player to the correct position after turning
-            Vector3 tempPlayerPosition = new Vector3(turnPosition.x, transform.position.y, turnPosition.z);
-            characterController.enabled = false;
-            transform.position = tempPlayerPosition;
-            
-            Debug.Log("Player position updated to: " + transform.position);
-
-            //Rotate the player to the new location direction
-            Quaternion targetRotation = Quaternion.Euler(0, 90 * turnValue, 0);
-            transform.rotation = targetRotation * transform.rotation;
-            Debug.Log("Player rotation updated to: " + transform.rotation.eulerAngles);
-            characterController.enabled = true;
-            //Update the stored direction that the player is moving along
-            movementDirection = transform.forward.normalized;
-            Debug.Log("Movement direction updated to: " + movementDirection);
-        }
-
-        //Perform grounded check in two locations (behind/ahead of player)
-        private bool IsGrounded(float length = 0.2f)
-        {
-            //Set raycast origin point to base of player
-            Vector3 firstRaycast = transform.position;
-            firstRaycast.y -= characterController.height / 2; //Set to bottom of player
-            firstRaycast.y += 0.1f;
-
-            Vector3 secondRaycast = firstRaycast;
-            secondRaycast += transform.forward * 0.2f; //Set ahead of player
-            firstRaycast -= transform.forward * 0.2f; //Set behind player
-
-            //Check both raycasts for ground collision
-            if (Physics.Raycast(firstRaycast, Vector3.down, out RaycastHit hitBehind, length, groundLayer) ||
-                Physics.Raycast(secondRaycast, Vector3.down, out RaycastHit hitAhead, length, groundLayer))
-            {
-                return true;
-            }
-            return false;
         }
     }
 }
