@@ -4,8 +4,8 @@ using UnityEngine;
 namespace EndlessRunner {
     public class TileSpawner : MonoBehaviour
     {
-        [SerializeField] private GameObject startingTile;
-        [SerializeField] private List<GameObject> tiles;
+        [SerializeField] private GameObject sraightTile;
+        [SerializeField] private List<GameObject> turnTiles;
         [SerializeField] private List<GameObject> obstacles;
 
         [SerializeField] private int tileStartCount = 10; //Number of tiles ahead of the player at the start of a new game
@@ -30,15 +30,22 @@ namespace EndlessRunner {
             //Spawn tiles in the starting area
             for (int i = 0; i < tileStartCount; i++)
             {
-                SpawnTile(startingTile.GetComponent<Tile>(), false);
+                SpawnTile(sraightTile.GetComponent<Tile>());
             }
+
+            SpawnTile(SelectRandomInList(turnTiles).GetComponent<Tile>());
         }
 
-        void SpawnTile(Tile tile, bool spawnObstacle)
+        void SpawnTile(Tile tile, bool spawnObstacle = false)
         {
             prevTile = GameObject.Instantiate(tile.gameObject, currentTileLocation, Quaternion.identity);
             currentTiles.Add(prevTile);
             currentTileLocation += Vector3.Scale(prevTile.GetComponent<Renderer>().bounds.size, currentTileDirection); //Set next tile spawn to be at end of current tile bounds
+        }
+
+        private GameObject SelectRandomInList(List <GameObject> list)
+        {
+            return list[Random.Range(0, list.Count)];
         }
     }
 }
