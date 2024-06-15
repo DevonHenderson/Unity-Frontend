@@ -34,9 +34,7 @@ namespace EndlessRunner {
                 SpawnTile(straightTile.GetComponent<Tile>());
             }
 
-            //SpawnTile(SelectRandomInList(turnTiles).GetComponent<Tile>());
-            SpawnTile(turnTiles[0].GetComponent<Tile>());
-            AddNewDirection(Vector3.left);
+            SpawnTile(SelectRandomInList(turnTiles).GetComponent<Tile>());
         }
 
         void SpawnTile(Tile tile, bool spawnObstacle = false)
@@ -46,6 +44,11 @@ namespace EndlessRunner {
 
             prevTile = GameObject.Instantiate(tile.gameObject, currentTileLocation, newTileRotation);
             currentTiles.Add(prevTile);
+
+            if (spawnObstacle)
+            {
+                SpawnObstacle();
+            }
 
             //Make sure tiles in new direction line up with path
             if (tile.type == TileType.STRAIGHT)
@@ -58,11 +61,18 @@ namespace EndlessRunner {
         void DeleteTiles()
         {
             // Using 1 so turnTile doesnt get deleted
-            while (currentTiles.Count != 1)
+            while (currentTiles.Count != 1) //Delete previous path
             {
                 GameObject tile = currentTiles[0];
                 currentTiles.RemoveAt(0);
                 Destroy(tile);
+            }
+
+            while (currentObstacles.Count != 0) //Delete previous obstacles
+            {
+                GameObject obstacle = currentObstacles[0];
+                currentObstacles.RemoveAt(0);
+                Destroy(obstacle);
             }
         }
 
@@ -100,6 +110,17 @@ namespace EndlessRunner {
             }
 
             SpawnTile(SelectRandomInList(turnTiles).GetComponent<Tile>());
+        }
+
+        private void SpawnObstacle()
+        {
+            if (Random.value > 0.2f) return; //Only have a 20% chance to spawn an obstacle
+
+            //Spawn a random obstacle with correct rotation
+            GameObject obstaclePrefab = SelectRandomInList(obstacles);
+            Quaternion newObstacleRotation = obstaclePrefab.gameObject.transform.rotation * Quaternion.LookRotation(currentTileDirection, Vector3.up);
+            GameObject obstacle = Instantiate(obstaclePrefab, currentTileLocation, newObstacleRotation);
+            currentObstacles.Add(obstacle);
         }
     }
 }
