@@ -54,6 +54,18 @@ namespace EndlessRunner {
             }
         }
 
+        //Removes tiles already passed from game scene to help performance
+        void DeleteTiles()
+        {
+            // Using 1 so turnTile doesnt get deleted
+            while (currentTiles.Count != 1)
+            {
+                GameObject tile = currentTiles[0];
+                currentTiles.RemoveAt(0);
+                Destroy(tile);
+            }
+        }
+
         private GameObject SelectRandomInList(List <GameObject> list)
         {
             return list[Random.Range(0, list.Count)];
@@ -63,7 +75,7 @@ namespace EndlessRunner {
         public void AddNewDirection(Vector3 direction)
         {
             currentTileDirection = direction;
-            //DeletePreviousTiles(); //Remove other tiles to help performance
+            DeleteTiles();
 
             Vector3 tileScale;
 
