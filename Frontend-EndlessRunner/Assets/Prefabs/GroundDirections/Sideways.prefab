@@ -66,7 +66,7 @@ GameObject:
   - component: {fileID: 2321152405329592023}
   - component: {fileID: 8850927214282965293}
   - component: {fileID: 4097692310678457393}
-  m_Layer: 8
+  m_Layer: 6
   m_Name: Entry
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -100,7 +100,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8233d90336aea43098adf6dbabd606a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_MeshFormatVersion: 1
+  m_MeshFormatVersion: 2
   m_Faces:
   - m_Indexes: 000000000100000002000000010000000300000002000000
     m_SmoothingGroup: 0
@@ -390,7 +390,7 @@ GameObject:
   - component: {fileID: 5442956170591159588}
   - component: {fileID: 4163924903548961238}
   - component: {fileID: 5341697770862133703}
-  m_Layer: 8
+  m_Layer: 6
   m_Name: Sideways
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -726,7 +726,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 837941063547552833}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Pivot
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Xml.Serialization;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -9,6 +10,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float speedIncreaseRate = .1f;
     [SerializeField] private float jumpHeight = 1f;
     [SerializeField] private float initialGravity = -9.81f;
+    [SerializeField] private LayerMask groundLayer;
     
     private float currentGravity;
     private float playerSpeed;
@@ -28,11 +30,69 @@ public class PlayerController : MonoBehaviour
         slideAction = playerInput.actions["Slide"];
     }
 
+    private void OnEnable()
+    {
+        turnAction.performed += PlayerTurn;
+        jumpAction.performed += PlayerJump;
+        slideAction.performed += PlayerTurn;
+    }
+
+    private void OnDisable()
+    {
+        turnAction.performed -= PlayerTurn;
+        jumpAction.performed -= PlayerJump;
+        slideAction.performed -= PlayerSlide;
+    }
+
     private void Start()
     {
         playerSpeed = initalPlayerSpeed;
         currentGravity = initialGravity;
     }
 
-    
+    //Handle behaviour for turn input
+    private void PlayerTurn(InputAction.CallbackContext context)
+    {
+
+    }
+    //Handle behaviour for jump input
+    private void PlayerJump(InputAction.CallbackContext context)
+    {
+
+    }
+    //Handle behaviour for slide input
+    private void PlayerSlide(InputAction.CallbackContext context)
+    {
+
+    }
+
+    //Move the player in the current direction
+    private void Update()
+    {
+        characterController.Move(transform.forward * playerSpeed * Time.deltaTime);
+    }
+
+    //Perform grounded check in two locations (behind/ahead of player)
+    private bool IsGrounded(float length)
+    {
+        //Set raycast origin point to base of player
+        Vector3 firstRaycast = transform.position;
+        firstRaycast.y -= characterController.height / 2; //Set to bottom of player
+        firstRaycast.y += 0.1f;
+
+        Vector3 secondRaycast = firstRaycast;
+        secondRaycast += transform.forward * 0.2f; //Set ahead of player
+        firstRaycast -= transform.forward * 0.2f; //Set behind player
+
+        Debug.DrawLine(firstRaycast, Vector3.down, Color.green, 2f);
+        Debug.DrawLine(secondRaycast, Vector3.down, Color.cyan, 2f);
+
+        //Check both raycasts for ground collision
+        if (Physics.Raycast(firstRaycast, Vector3.down, out RaycastHit hitBehind, length, groundLayer) || 
+            Physics.Raycast(secondRaycast, Vector3.down, out RaycastHit hitAhead, length, groundLayer))
+        {
+            return true;
+        }
+        return false;
+    }
 }
