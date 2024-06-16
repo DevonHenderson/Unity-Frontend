@@ -171,11 +171,29 @@ namespace EndlessRunner {
             characterController.enabled = true;
 
             Quaternion targetRotation = transform.rotation * Quaternion.Euler(0, 90 * turnValue, 0);
+
+            // Start the coroutine to rotate player over time
+            StartCoroutine(RotateOverTime(targetRotation, 0.1f));
+
+        }
+
+        //Make the rotation at turning pivots appear smoother
+        private IEnumerator RotateOverTime(Quaternion targetRotation, float duration)
+        {
+            Quaternion initialRotation = transform.rotation;
+            float elapsedTime = 0;
+
+            while (elapsedTime < duration)
+            {
+                transform.rotation = Quaternion.Slerp(initialRotation, targetRotation, elapsedTime / duration);
+                elapsedTime += Time.deltaTime;
+                yield return null;
+            }
+
             transform.rotation = targetRotation;
 
             // Update the stored direction that the player is moving along
             movementDirection = transform.forward.normalized;
-            
         }
 
         //Handle behaviour for jump input
