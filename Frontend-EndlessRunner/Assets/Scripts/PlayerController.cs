@@ -87,7 +87,6 @@ namespace EndlessRunner {
             //Falling off level
             if (!IsGrounded(20f))
             {
-                Debug.Log("Update GOver");
                 GameOver();
                 return;
             }
@@ -129,7 +128,6 @@ namespace EndlessRunner {
             //Player not standing on tile with turn pivot
             if (!turnPosition.HasValue)
             {
-                Debug.Log("PlayerTurn gameover");
                 GameOver();
                 return;
             }
@@ -262,7 +260,6 @@ namespace EndlessRunner {
 
         private void GameOver()
         {
-            Debug.Log("Game Over");
             gameOverEvent.Invoke((int)score);
             gameObject.SetActive(false);
             camera.gameObject.SetActive(true);
@@ -272,7 +269,6 @@ namespace EndlessRunner {
         {
             if (((1 << hit.collider.gameObject.layer) & obstacleLayer) != 0)
             {
-                Debug.Log("Controller collider game over");
                 GameOver();
             }
         }
