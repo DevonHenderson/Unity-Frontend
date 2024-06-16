@@ -6,6 +6,7 @@ namespace EndlessRunner {
     public class TileSpawner : MonoBehaviour
     {
         [SerializeField] private GameObject straightTile;
+        [SerializeField] private List<GameObject> straightTiles;
         [SerializeField] private List<GameObject> turnTiles;
         [SerializeField] private List<GameObject> obstacles;
 
@@ -31,7 +32,7 @@ namespace EndlessRunner {
             //Spawn tiles in the starting area
             for (int i = 0; i < tileStartCount; i++)
             {
-                SpawnTile(straightTile.GetComponent<Tile>());
+                SpawnTile(SelectRandomInList(straightTiles).GetComponent<Tile>());
             }
 
             SpawnTile(SelectRandomInList(turnTiles).GetComponent<Tile>());
@@ -106,7 +107,7 @@ namespace EndlessRunner {
 
             for (int i = 0; i < currentPathLength; i++)
             {
-                SpawnTile(straightTile.GetComponent<Tile>(), (i == 0) ? false : true); //Make sure obstacles dont spawn immediately after turns
+                SpawnTile(SelectRandomInList(straightTiles).GetComponent<Tile>(), (i == 0) ? false : true); //Make sure obstacles dont spawn immediately after turns
             }
 
             SpawnTile(SelectRandomInList(turnTiles).GetComponent<Tile>());
