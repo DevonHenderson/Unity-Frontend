@@ -10,7 +10,6 @@ namespace EndlessRunner {
         [SerializeField] private float initalPlayerSpeed = 4f;
         [SerializeField] private float maximumPlayerSpeed = 30f;
         [SerializeField] private float speedIncreaseRate = .1f;
-        [SerializeField] private UnityEvent<Vector3> turnEvent;
         [SerializeField] private float playerSpeed;
         private Vector3 movementDirection = Vector3.forward;
 
@@ -39,6 +38,15 @@ namespace EndlessRunner {
         [SerializeField] AnimationClip slideAnimation;
         private int slidingAnimID;
         private bool isSliding = false;
+
+        [Header("Scoring")]
+        private float score = 0;
+        private float scoreMultiplier = 10f;
+
+        [Header("Events")]
+        [SerializeField] private UnityEvent<Vector3> turnEvent;
+        [SerializeField] private UnityEvent<int> gameOverEvent;
+        [SerializeField] private UnityEvent<int> scoreUpdateEvent;
 
         private void Awake()
         {
@@ -73,14 +81,20 @@ namespace EndlessRunner {
 
         private void Update()
         {
-            if (!IsGrounded())
+            //Falling off level
+            if (!IsGrounded(20f))
             {
                 Debug.Log("Update GOver");
                 GameOver();
                 return;
             }
 
-            characterController.Move(transform.forward * playerSpeed * Time.deltaTime); //Move the player cosntantly in the current direction
+            //Scoring
+            score += scoreMultiplier * Time.deltaTime;
+            scoreUpdateEvent.Invoke((int)score); //Cast value as int
+
+            //Move the player cosntantly in the current direction
+            characterController.Move(transform.forward * playerSpeed * Time.deltaTime); 
 
             //Make sure player stays on top of ground
             if (IsGrounded() && playerVelocity.y < 0)
@@ -218,7 +232,8 @@ namespace EndlessRunner {
         private void GameOver()
         {
             Debug.Log("Game Over");
-
+            gameOverEvent.Invoke((int)score);
+            gameObject.SetActive(false);
         }
 
         private void OnControllerColliderHit(ControllerColliderHit hit)
