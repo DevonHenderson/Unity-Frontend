@@ -2308,6 +2308,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   straightTile: {fileID: 7270030239991754380, guid: 50a7756a8e2f0f14787d70ef66f51488, type: 3}
+  straightTiles:
+  - {fileID: 7270030239991754380, guid: e8ddef6dbd71dd7428cd47724b76b1f8, type: 3}
+  - {fileID: 7270030239991754380, guid: 50a7756a8e2f0f14787d70ef66f51488, type: 3}
+  - {fileID: 7270030239991754380, guid: ea3aa7998a4e83242bf4bbe7ebe815d0, type: 3}
+  - {fileID: 7270030239991754380, guid: 50e50eb4ab47085448329e6cd902501c, type: 3}
+  - {fileID: 7270030239991754380, guid: 3d12b8e775712b14caf404e9edbd7d09, type: 3}
   turnTiles:
   - {fileID: 3504972824814534260, guid: ea0def3c25f5f5f4b93d3b34532abff4, type: 3}
   - {fileID: 3504972824814534260, guid: 28671ffdf6c760042b8764d3e64d3b32, type: 3}
@@ -2315,9 +2321,14 @@ MonoBehaviour:
   - {fileID: 3109650500946958552, guid: 6ecc9702ea113bc4fb2e40979a16a0ed, type: 3}
   - {fileID: 3109650500946958552, guid: 39a942ccc8f8d4043a2befea7b649a8e, type: 3}
   - {fileID: 3109650500946958552, guid: d1bc38dd49605864690bd11be3a4da2a, type: 3}
+  - {fileID: 5635246150992067340, guid: c9898e64da3c03447abe145c64c14c02, type: 3}
+  - {fileID: 5635246150992067340, guid: 8491c15331bc39a458c6aa3a07c15608, type: 3}
   - {fileID: 5635246150992067340, guid: 406d087854fa4cf4ba1b09b5571e98e9, type: 3}
   obstacles:
   - {fileID: 1887772381221813489, guid: 7acef6c3f1b5d6f45b162045d394132f, type: 3}
+  - {fileID: 1887772381221813489, guid: 8a7a58f397de6114093e0d36afab9bcd, type: 3}
+  - {fileID: 1887772381221813489, guid: 2c28c892aa078cf4a8b1ddb36695ca95, type: 3}
+  - {fileID: 1887772381221813489, guid: b29ffb95f0f37f2409b888d5ff70d581, type: 3}
   - {fileID: 7602181854675208719, guid: 155f450bb33de2c4f96d377dba80b194, type: 3}
   tileStartCount: 4
   minTilesAhead: 3
