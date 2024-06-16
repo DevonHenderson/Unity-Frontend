@@ -114,7 +114,7 @@ namespace EndlessRunner {
 
         private void SpawnObstacle()
         {
-            if (Random.value > 0.2f) return; //Only have a 20% chance to spawn an obstacle
+            if (Random.value > 0.4f) return; //Only have a 40% chance to spawn an obstacle
 
             //Spawn a random obstacle with correct rotation
             GameObject obstaclePrefab = SelectRandomInList(obstacles);

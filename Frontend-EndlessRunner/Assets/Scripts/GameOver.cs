@@ -20,7 +20,6 @@ namespace EndlessRunner
             gameplayCanvas.SetActive(false);
             this.score = score;
             scoreDisplay.text = score.ToString();
-            SubmitScore();
         }
 
         public void RestartLevel()

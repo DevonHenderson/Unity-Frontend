@@ -108,7 +108,17 @@ namespace EndlessRunner {
             playerVelocity.y += currentGravity * Time.deltaTime;
             characterController.Move(playerVelocity * Time.deltaTime);
 
+            if (playerSpeed < maximumPlayerSpeed)
+            {
+                playerSpeed += Time.deltaTime * speedIncreaseRate;
+                currentGravity = initialGravity - playerSpeed; //Make sure gravity is still accurate at higher speeds
 
+                //Make animations player faster if player has sped up
+                if (animator.speed < 1.25f)
+                {
+                    animator.speed += (1 / playerSpeed) * Time.deltaTime;
+                }
+            }
         }
 
         //Handle behaviour for turn input
@@ -223,7 +233,7 @@ namespace EndlessRunner {
 
             //Play the sliding animation
             animator.Play(slidingAnimID);
-            yield return new WaitForSeconds(slideAnimation.length); //Wait for animation to play fully
+            yield return new WaitForSeconds(slideAnimation.length / animator.speed); //Wait for animation to play fully
 
             //Return collider to previous size
             characterController.height *= 2;
