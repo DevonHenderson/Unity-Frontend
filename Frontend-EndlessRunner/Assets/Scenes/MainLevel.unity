@@ -1261,7 +1261,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
+  near clip plane: 0.01
   far clip plane: 1000
   field of view: 60.000004
   orthographic: 0
@@ -2309,7 +2309,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   straightTile: {fileID: 7270030239991754380, guid: 50a7756a8e2f0f14787d70ef66f51488, type: 3}
   turnTiles:
+  - {fileID: 3504972824814534260, guid: ea0def3c25f5f5f4b93d3b34532abff4, type: 3}
+  - {fileID: 3504972824814534260, guid: 28671ffdf6c760042b8764d3e64d3b32, type: 3}
   - {fileID: 3504972824814534260, guid: 57a0c77d40fb7f64f88c73e669bd75d0, type: 3}
+  - {fileID: 3109650500946958552, guid: 6ecc9702ea113bc4fb2e40979a16a0ed, type: 3}
+  - {fileID: 3109650500946958552, guid: 39a942ccc8f8d4043a2befea7b649a8e, type: 3}
   - {fileID: 3109650500946958552, guid: d1bc38dd49605864690bd11be3a4da2a, type: 3}
   - {fileID: 5635246150992067340, guid: 406d087854fa4cf4ba1b09b5571e98e9, type: 3}
   obstacles:
