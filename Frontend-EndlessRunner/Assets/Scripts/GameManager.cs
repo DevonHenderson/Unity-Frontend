@@ -22,7 +22,7 @@ public class GameManager : MonoBehaviour
         //    Debug.Log("Connected successfully to API");
         //    connected = true;
         //}
-        return;
+        yield return null;
         //yield return new WaitUntil(() => connected);
         apiConnected.Invoke();
     }

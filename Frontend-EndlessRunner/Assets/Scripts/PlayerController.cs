@@ -48,6 +48,9 @@ namespace EndlessRunner {
         [SerializeField] private UnityEvent<int> gameOverEvent;
         [SerializeField] private UnityEvent<int> scoreUpdateEvent;
 
+        [Header("End Game Camera")]
+        [SerializeField] private Camera camera;
+
         private void Awake()
         {
             playerInput = GetComponent<PlayerInput>();
@@ -234,6 +237,7 @@ namespace EndlessRunner {
             Debug.Log("Game Over");
             gameOverEvent.Invoke((int)score);
             gameObject.SetActive(false);
+            camera.gameObject.SetActive(true);
         }
 
         private void OnControllerColliderHit(ControllerColliderHit hit)

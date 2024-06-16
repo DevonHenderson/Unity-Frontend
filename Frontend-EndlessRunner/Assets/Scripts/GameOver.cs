@@ -2,25 +2,30 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace EndlessRunner
 {
     public class GameOver : MonoBehaviour
     {
         [SerializeField] private GameObject gameOverCanvas;
-        [SerializeField] private TMP_InputField nameInput;
+        [SerializeField] public TMP_InputField nameInput;
+        [SerializeField] private TextMeshProUGUI scoreDisplay;
+        [SerializeField] private GameObject gameplayCanvas; 
 
         private int score = 0;
         public void StopGame(int score)
         {
             gameOverCanvas.SetActive(true);
+            gameplayCanvas.SetActive(false);
             this.score = score;
+            scoreDisplay.text = score.ToString();
             SubmitScore();
         }
 
         public void RestartLevel()
         {
-
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
 
         public void SubmitScore()
@@ -33,6 +38,7 @@ namespace EndlessRunner
             //In api
             //SetName (playerName.text)
             //SetScore (score)
+            yield return null;
         }
     }
 }
