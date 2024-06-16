@@ -10,32 +10,35 @@ namespace EndlessRunner {
         [SerializeField] private float initalPlayerSpeed = 4f;
         [SerializeField] private float maximumPlayerSpeed = 30f;
         [SerializeField] private float speedIncreaseRate = .1f;
-        private float playerSpeed;
+        [SerializeField] private UnityEvent<Vector3> turnEvent;
+        [SerializeField] private float playerSpeed;
         private Vector3 movementDirection = Vector3.forward;
 
         [Header("Player Jumping")]
         [SerializeField] private float jumpHeight = 1f;
         [SerializeField] private float initialGravity = -9.81f;
-        [SerializeField] private LayerMask groundLayer;
-        [SerializeField] private LayerMask turnLayer;
         private float currentGravity;
         private Vector3 playerVelocity;
 
-        [Header("Player Input System")]
+        [Header("Player Input System")] //Store inputs for faster checking of behaviours
         private PlayerInput playerInput;
         private InputAction turnAction;
         private InputAction jumpAction;
         private InputAction slideAction;
 
+        [Header("Player Components")]
         private CharacterController characterController;
-
-        [Header("Animator Components")] //For sliding animation
         private Animator animator;
-        private int slidingAnimID;
-        [SerializeField] AnimationClip slideAnimation;
-        private bool isSliding = false;
 
-        [SerializeField] private UnityEvent<Vector3> turnEvent;
+        [Header("Layer Masks")]
+        [SerializeField] private LayerMask groundLayer;
+        [SerializeField] private LayerMask turnLayer;
+        [SerializeField] private LayerMask obstacleLayer;
+
+        [Header("Animator variables")] //For sliding animation
+        [SerializeField] AnimationClip slideAnimation;
+        private int slidingAnimID;
+        private bool isSliding = false;
 
         private void Awake()
         {
@@ -70,6 +73,13 @@ namespace EndlessRunner {
 
         private void Update()
         {
+            if (!IsGrounded())
+            {
+                Debug.Log("Update GOver");
+                GameOver();
+                return;
+            }
+
             characterController.Move(transform.forward * playerSpeed * Time.deltaTime); //Move the player cosntantly in the current direction
 
             //Make sure player stays on top of ground
@@ -80,6 +90,8 @@ namespace EndlessRunner {
 
             playerVelocity.y += currentGravity * Time.deltaTime;
             characterController.Move(playerVelocity * Time.deltaTime);
+
+
         }
 
         //Handle behaviour for turn input
@@ -90,6 +102,8 @@ namespace EndlessRunner {
             //Player not standing on tile with turn pivot
             if (!turnPosition.HasValue)
             {
+                Debug.Log("PlayerTurn gameover");
+                GameOver();
                 return;
             }
 
@@ -199,6 +213,21 @@ namespace EndlessRunner {
             characterController.center = originalControllerCentre;
             
             isSliding = false;
+        }
+
+        private void GameOver()
+        {
+            Debug.Log("Game Over");
+
+        }
+
+        private void OnControllerColliderHit(ControllerColliderHit hit)
+        {
+            if (((1 << hit.collider.gameObject.layer) & obstacleLayer) != 0)
+            {
+                Debug.Log("Controller collider game over");
+                GameOver();
+            }
         }
     }
 }
