@@ -10,7 +10,7 @@ namespace EndlessRunner {
         [SerializeField] private float initalPlayerSpeed = 4f;
         [SerializeField] private float maximumPlayerSpeed = 30f;
         [SerializeField] private float speedIncreaseRate = .1f;
-        [SerializeField] private float playerSpeed;
+        [SerializeField] public float playerSpeed;
         private Vector3 movementDirection = Vector3.forward;
 
         [Header("Player Jumping")]
