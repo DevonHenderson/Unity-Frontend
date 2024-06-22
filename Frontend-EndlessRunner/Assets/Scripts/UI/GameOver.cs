@@ -21,6 +21,8 @@ namespace EndlessRunner
         [SerializeField] private GameObject gameplayCanvas; 
         private int score = 0;
 
+        [SerializeField] private TextMeshProUGUI bestScore;
+
         /// <summary>
         /// Shows the end game canvas with accurate score
         /// </summary>
@@ -130,6 +132,7 @@ namespace EndlessRunner
             else
             {
                 Debug.Log("Score updated successfully!");
+
             }
         }
 

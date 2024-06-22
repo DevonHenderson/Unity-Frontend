@@ -15,6 +15,10 @@ public class Titlescreen : MonoBehaviour
     [SerializeField] private GameObject scoreCanvas;
     private Image titlescreenImage;
 
+    //Used to zoom in panel when starting
+    private Vector3 initialScale;
+    private Vector3 targetScale = new Vector3(1.5f, 1.5f, 1f);
+
     /// <summary>
     /// Freeze the game at start and get panel image to modify in coroutine
     /// </summary>
@@ -22,6 +26,7 @@ public class Titlescreen : MonoBehaviour
     {
         Time.timeScale = 0f;
         titlescreenImage = titlePanel.GetComponent<Image>();
+        initialScale = titlePanel.transform.localScale;
     }
 
     /// <summary>
@@ -48,8 +53,17 @@ public class Titlescreen : MonoBehaviour
             elapsedTime += Time.unscaledDeltaTime;  // Use unscaledDeltaTime because Time.timeScale is 0
             float alpha = Mathf.Clamp01(1f - (elapsedTime / duration));
             titlescreenImage.color = new Color(initialColor.r, initialColor.g, initialColor.b, alpha);
+
+            //Scale up the panel while fading so it looks like its zooming in
+            float scaleProgress = elapsedTime / duration;
+            titlePanel.transform.localScale = Vector3.Lerp(initialScale, targetScale, scaleProgress);
+
             yield return null;
         }
+
+        // Ensure final values are set
+        titlescreenImage.color = new Color(initialColor.r, initialColor.g, initialColor.b, 0f); 
+        titlePanel.transform.localScale = targetScale;
 
         titleCanvas.SetActive(false);
         scoreCanvas.SetActive(true);
