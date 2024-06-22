@@ -4,8 +4,10 @@
  */
 
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 
 namespace EndlessRunner
@@ -28,7 +30,7 @@ namespace EndlessRunner
             gameOverCanvas.SetActive(true);
             gameplayCanvas.SetActive(false);
             this.score = score;
-            scoreDisplay.text = score.ToString();
+            scoreDisplay.text = "Final Score: " + score.ToString();
         }
 
         /// <summary>
@@ -44,20 +46,98 @@ namespace EndlessRunner
         /// </summary>
         public void SubmitScore()
         {
+            StartCoroutine(SetUser());
             StartCoroutine(UpdateScore());
         }
 
-        /// <summary>
-        /// Updates the score on the API on submit button OnClick event
-        /// </summary>
-        /// <returns>null</returns>
-        // Not currently completed
+        private IEnumerator SetUser()
+        {
+            string json = "{\"username\": \"" + nameInput.text + "\"}";
+            string url = "http://localhost:5432/api/user"; // Replace <PORT> with your actual port
+
+            UnityWebRequest request = new UnityWebRequest(url, "POST");
+            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+
+            yield return request.SendWebRequest();
+
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError("Failed to create user: " + request.error);
+            }
+            else
+            {
+                string response = request.downloadHandler.text;
+                try
+                {
+                    // Parse JSON response
+                    var responseData = JsonUtility.FromJson<UserCreationResponse>(response);
+
+                    if (responseData != null)
+                    {
+                        if (request.responseCode == 200 || request.responseCode == 201) // Handle both success and user exists scenarios
+                        {
+                            int userID = responseData.id;
+                            PlayerPrefs.SetInt("userID", userID);
+                            PlayerPrefs.Save(); // Save PlayerPrefs immediately
+
+                            Debug.Log("User created/updated successfully. UserID: " + userID);
+
+                            // Now update the score using the retrieved userID
+                            StartCoroutine(UpdateScore());
+                        }
+                        else
+                        {
+                            Debug.LogError("Failed to create/update user. Unexpected response code: " + request.responseCode);
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogError("Failed to parse response data.");
+                    }
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogError("Error parsing response: " + e.Message);
+                }
+            }
+        }
+
         private IEnumerator UpdateScore()
         {
-            //In api
-            //SetName (playerName.text)
-            //SetScore (score)
-            yield return null;
+            int userID = PlayerPrefs.GetInt("userID");
+
+            // Construct the JSON object with score
+            string json = "{\"unityBestScore\": " + score.ToString() + "}";
+
+            // Construct the URL for updating the score
+            string url = "http://localhost:5432/api/user/score/" + userID.ToString(); 
+
+            UnityWebRequest request = new UnityWebRequest(url, "PUT");
+            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+
+            yield return request.SendWebRequest();
+
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError("Failed to update score: " + request.error);
+            }
+            else
+            {
+                Debug.Log("Score updated successfully!");
+            }
+        }
+
+        [System.Serializable]
+        private class UserCreationResponse
+        {
+            public string msg;
+            public int id; // Assuming the response includes the user ID
         }
     }
 }
