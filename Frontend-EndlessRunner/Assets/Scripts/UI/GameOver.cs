@@ -52,6 +52,7 @@ namespace EndlessRunner
         /// <returns></returns>
         private IEnumerator SetUser()
         {
+            Debug.Log("Making request SETUSER");
             string json = "{\"username\": \"" + nameInput.text + "\"}";
             string url = "http://localhost:5432/api/user";
 
@@ -104,6 +105,7 @@ namespace EndlessRunner
         /// <returns></returns>
         private IEnumerator GetBestScore(int userID)
         {
+            Debug.Log("Making request BESTSCORE");
             //Make the request
             string url = "http://localhost:5432/api/user/" + userID.ToString();
             UnityWebRequest request = UnityWebRequest.Get(url);
@@ -146,6 +148,7 @@ namespace EndlessRunner
         /// <returns></returns>
         private IEnumerator UpdateScore(int userID)
         {
+            Debug.Log("Making request UPDATESCORE");
             // Create JSON object with score
             string json = "{\"unityBestScore\": " + score.ToString() + "}";
 
