@@ -1,3 +1,8 @@
+/*
+ * File: PlayerController.cs
+ * Purpose: Manages the player movement and score during gameplay
+ */
+
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
@@ -40,7 +45,7 @@ namespace EndlessRunner {
         private bool isSliding = false;
 
         [Header("Scoring")]
-        private float score = 0;
+        public float score = 0; //public so it can update obstacle probabilities
         private float scoreMultiplier = 10f;
 
         [Header("Events")]
@@ -51,6 +56,9 @@ namespace EndlessRunner {
         [Header("End Game Camera")]
         [SerializeField] private Camera camera;
 
+        /// <summary>
+        /// Assign components to objects and store player inputs
+        /// </summary>
         private void Awake()
         {
             playerInput = GetComponent<PlayerInput>();
@@ -62,6 +70,9 @@ namespace EndlessRunner {
             slideAction = playerInput.actions["Slide"];
         }
 
+        /// <summary>
+        /// Use input action to run specific functions
+        /// </summary>
         private void OnEnable()
         {
             turnAction.performed += PlayerTurn;
@@ -69,6 +80,9 @@ namespace EndlessRunner {
             slideAction.performed += PlayerSlide;
         }
 
+        /// <summary>
+        /// Stop code running when input action stopped
+        /// </summary>
         private void OnDisable()
         {
             turnAction.performed -= PlayerTurn;
@@ -76,15 +90,22 @@ namespace EndlessRunner {
             slideAction.performed -= PlayerSlide;
         }
 
+        /// <summary>
+        /// Set the default speed and gravity for the player
+        /// </summary>
         private void Start()
         {
             playerSpeed = initalPlayerSpeed;
             currentGravity = initialGravity;
         }
 
+        /// <summary>
+        /// Checks the state of the player for movement/jumping/sliding speeds  <br />
+        /// Updates the score during gameplay
+        /// </summary>
         private void Update()
         {
-            //Falling off level
+            //Falling off level ends the game
             if (!IsGrounded(20f))
             {
                 GameOver();
@@ -107,20 +128,24 @@ namespace EndlessRunner {
             playerVelocity.y += currentGravity * Time.deltaTime;
             characterController.Move(playerVelocity * Time.deltaTime);
 
+            //Increase the player speed up to a max value
             if (playerSpeed < maximumPlayerSpeed)
             {
                 playerSpeed += Time.deltaTime * speedIncreaseRate;
                 currentGravity = initialGravity - playerSpeed; //Make sure gravity is still accurate at higher speeds
 
                 //Make animations player faster if player has sped up
-                if (animator.speed < 1.25f)
+                if (animator.speed < 1.4f)
                 {
                     animator.speed += (1 / playerSpeed) * Time.deltaTime;
                 }
             }
         }
 
-        //Handle behaviour for turn input
+        /// <summary>
+        /// Handle behaviour for turn input
+        /// </summary>
+        /// <param name="context"></param>
         private void PlayerTurn(InputAction.CallbackContext context)
         {
             Vector3? turnPosition = CheckTurn(context.ReadValue<float>());
@@ -138,7 +163,11 @@ namespace EndlessRunner {
             Turn(context.ReadValue<float>(), turnPosition.Value);
         }
 
-        //Returns the type of turn prefab the player is moving on
+        /// <summary>
+        /// Returns the type of turn prefab the player is moving on
+        /// </summary>
+        /// <param name="turnValue"></param>
+        /// <returns></returns>
         private Vector3? CheckTurn(float turnValue)
         {
             //Check for pivot point colliders on 'Turn' prefabs
@@ -160,6 +189,12 @@ namespace EndlessRunner {
             return null;
         }
 
+        /// <summary>
+        /// Move the player to correct turn position  <br />
+        /// Rotate with slight delay so camera movement looks smoother
+        /// </summary>
+        /// <param name="turnValue">Input value</param>
+        /// <param name="turnPosition"></param>
         private void Turn(float turnValue, Vector3 turnPosition)
         {
             // Move the player to the correct position after turning
@@ -171,11 +206,16 @@ namespace EndlessRunner {
             Quaternion targetRotation = transform.rotation * Quaternion.Euler(0, 90 * turnValue, 0);
 
             // Start the coroutine to rotate player over time
-            StartCoroutine(RotateOverTime(targetRotation, 0.1f));
+            StartCoroutine(RotateOverTime(targetRotation, 0.05f));
 
         }
 
-        //Make the rotation at turning pivots appear smoother
+        /// <summary>
+        /// Make the rotation at turning pivots appear smoother
+        /// </summary>
+        /// <param name="targetRotation"></param>
+        /// <param name="duration"></param>
+        /// <returns></returns>
         private IEnumerator RotateOverTime(Quaternion targetRotation, float duration)
         {
             Quaternion initialRotation = transform.rotation;
@@ -194,7 +234,10 @@ namespace EndlessRunner {
             movementDirection = transform.forward.normalized;
         }
 
-        //Handle behaviour for jump input
+        /// <summary>
+        /// Handle grounded check for jump input
+        /// </summary>
+        /// <param name="context"></param>
         private void PlayerJump(InputAction.CallbackContext context)
         {
             //Only jump when grounded
@@ -204,7 +247,10 @@ namespace EndlessRunner {
                 characterController.Move(playerVelocity * Time.deltaTime);
             }
         }
-        //Handle behaviour for slide input
+        /// <summary>
+        /// Handle behaviour for slide input
+        /// </summary>
+        /// <param name="context"></param>
         private void PlayerSlide(InputAction.CallbackContext context)
         {
             if (!isSliding && IsGrounded())
@@ -213,7 +259,11 @@ namespace EndlessRunner {
             }
         }
 
-        //Perform grounded check in two locations (behind/ahead of player)
+        /// <summary>
+        /// Perform grounded check in two locations (behind/ahead of player)
+        /// </summary>
+        /// <param name="length"></param>
+        /// <returns></returns>
         private bool IsGrounded(float length = 0.2f)
         {
             //Set raycast origin point to base of player
@@ -234,6 +284,11 @@ namespace EndlessRunner {
             return false;
         }
 
+        /// <summary>
+        /// Start the sliding animation  <br />
+        /// Can only play once before needing another input
+        /// </summary>
+        /// <returns></returns>
         private IEnumerator Slide()
         {
             isSliding = true; //Only let player slide once
@@ -258,6 +313,10 @@ namespace EndlessRunner {
             isSliding = false;
         }
 
+        /// <summary>
+        /// Swap camea to endgame camera and show canvas <br />
+        /// Update score on final canvas
+        /// </summary>
         private void GameOver()
         {
             gameOverEvent.Invoke((int)score);
@@ -265,6 +324,10 @@ namespace EndlessRunner {
             camera.gameObject.SetActive(true);
         }
 
+        /// <summary>
+        /// Check for collision with obstacles/walls
+        /// </summary>
+        /// <param name="hit"></param>
         private void OnControllerColliderHit(ControllerColliderHit hit)
         {
             if (((1 << hit.collider.gameObject.layer) & obstacleLayer) != 0)

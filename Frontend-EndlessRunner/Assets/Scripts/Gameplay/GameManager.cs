@@ -1,3 +1,8 @@
+/*
+ * File: GameManager.cs
+ * Purpose: Saves data to the API
+ */
+
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;

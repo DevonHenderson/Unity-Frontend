@@ -1,3 +1,8 @@
+/*
+ * File: Tile.cs
+ * Purpose: Stores data about the Tile
+ */
+
 using UnityEngine;
 
 namespace EndlessRunner {
