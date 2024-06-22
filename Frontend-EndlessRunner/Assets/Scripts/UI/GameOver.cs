@@ -1,10 +1,4 @@
-/*
- * File: GameOver.cs
- * Purpose: Shows the endscreen panel and has fields to POST to API
- */
-
 using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -18,10 +12,10 @@ namespace EndlessRunner
         [SerializeField] private GameObject gameOverCanvas;
         [SerializeField] public TMP_InputField nameInput;
         [SerializeField] private TextMeshProUGUI scoreDisplay;
-        [SerializeField] private GameObject gameplayCanvas; 
+        [SerializeField] private GameObject gameplayCanvas;
         private int score = 0;
 
-        [SerializeField] private TextMeshProUGUI bestScore;
+        [SerializeField] private TextMeshProUGUI bestScoreDisplay; // UI element to display best score
 
         /// <summary>
         /// Shows the end game canvas with accurate score
@@ -33,6 +27,7 @@ namespace EndlessRunner
             gameplayCanvas.SetActive(false);
             this.score = score;
             scoreDisplay.text = "Final Score: " + score.ToString();
+            bestScoreDisplay.enabled = false;
         }
 
         /// <summary>
@@ -49,13 +44,16 @@ namespace EndlessRunner
         public void SubmitScore()
         {
             StartCoroutine(SetUser());
-            StartCoroutine(UpdateScore());
         }
 
+        /// <summary>
+        /// Creates/Gets a user from the API
+        /// </summary>
+        /// <returns></returns>
         private IEnumerator SetUser()
         {
             string json = "{\"username\": \"" + nameInput.text + "\"}";
-            string url = "http://localhost:5432/api/user"; // Replace <PORT> with your actual port
+            string url = "http://localhost:5432/api/user";
 
             UnityWebRequest request = new UnityWebRequest(url, "POST");
             byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
@@ -65,6 +63,7 @@ namespace EndlessRunner
 
             yield return request.SendWebRequest();
 
+            //Error Checks
             if (request.result != UnityWebRequest.Result.Success)
             {
                 Debug.LogError("Failed to create user: " + request.error);
@@ -77,27 +76,18 @@ namespace EndlessRunner
                     // Parse JSON response
                     var responseData = JsonUtility.FromJson<UserCreationResponse>(response);
 
-                    if (responseData != null)
+                    if (request.responseCode == 200 || request.responseCode == 201)
                     {
-                        if (request.responseCode == 200 || request.responseCode == 201) // Handle both success and user exists scenarios
-                        {
-                            int userID = responseData.id;
-                            PlayerPrefs.SetInt("userID", userID);
-                            PlayerPrefs.Save(); // Save PlayerPrefs immediately
+                        //Save the User ID for other API updates
+                        int userID = responseData.id;
+                        PlayerPrefs.SetInt("userID", userID);
+                        PlayerPrefs.Save(); // Save PlayerPrefs immediately
 
-                            Debug.Log("User created/updated successfully. UserID: " + userID);
+                        //Debug.Log("User created/updated successfully. UserID: " + userID);
 
-                            // Now update the score using the retrieved userID
-                            StartCoroutine(UpdateScore());
-                        }
-                        else
-                        {
-                            Debug.LogError("Failed to create/update user. Unexpected response code: " + request.responseCode);
-                        }
-                    }
-                    else
-                    {
-                        Debug.LogError("Failed to parse response data.");
+                        // Get the user's best score using the retrieved userID
+                        StartCoroutine(GetBestScore(userID));
+                        StartCoroutine(GetBestScore(userID)); // Had to call twice otherwise score wouldnt update correctly
                     }
                 }
                 catch (System.Exception e)
@@ -107,22 +97,67 @@ namespace EndlessRunner
             }
         }
 
-        private IEnumerator UpdateScore()
+        /// <summary>
+        /// Gets the current best score for a userID from the API
+        /// </summary>
+        /// <param name="userID"></param>
+        /// <returns></returns>
+        private IEnumerator GetBestScore(int userID)
         {
-            int userID = PlayerPrefs.GetInt("userID");
+            //Make the request
+            string url = "http://localhost:5432/api/user/" + userID.ToString();
+            UnityWebRequest request = UnityWebRequest.Get(url);
+            yield return request.SendWebRequest();
 
-            // Construct the JSON object with score
+            //Check if successful
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError("Failed to get best score: " + request.error);
+            }
+            else
+            {
+                string response = request.downloadHandler.text;
+                try
+                {
+                    // Parse JSON response
+                    var responseData = JsonUtility.FromJson<UserDataResponse>(response);
+                    int bestScore = responseData.data.unityBestScore;
+                    bestScoreDisplay.text = "(" + nameInput.text + ") Personal Best: " + bestScore.ToString();
+                    bestScoreDisplay.enabled = true;
+
+                    // Check if the current score is higher than the best score
+                    if (score > bestScore)
+                    {
+                        // Update the best score on the backend
+                        StartCoroutine(UpdateScore(userID));
+                    }
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogError("Error parsing response: " + e.Message);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Try update to new score if higher than previous best stored on API
+        /// </summary>
+        /// <param name="userID"></param>
+        /// <returns></returns>
+        private IEnumerator UpdateScore(int userID)
+        {
+            // Create JSON object with score
             string json = "{\"unityBestScore\": " + score.ToString() + "}";
 
-            // Construct the URL for updating the score
-            string url = "http://localhost:5432/api/user/score/" + userID.ToString(); 
+            // URL for updating the score
+            string url = "http://localhost:5432/api/user/score/" + userID.ToString();
 
+            //Request
             UnityWebRequest request = new UnityWebRequest(url, "PUT");
             byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
             request.uploadHandler = new UploadHandlerRaw(bodyRaw);
             request.downloadHandler = new DownloadHandlerBuffer();
             request.SetRequestHeader("Content-Type", "application/json");
-
             yield return request.SendWebRequest();
 
             if (request.result != UnityWebRequest.Result.Success)
@@ -132,15 +167,15 @@ namespace EndlessRunner
             else
             {
                 Debug.Log("Score updated successfully!");
-
+                StartCoroutine(GetBestScore(userID)); //Make sure the score display is correct
             }
         }
 
-        [System.Serializable]
-        private class UserCreationResponse
-        {
-            public string msg;
-            public int id; // Assuming the response includes the user ID
-        }
+        //Got some help from ChatGPT for creating these classes
+        //Allows for successful API calls
+        [System.Serializable] private class UserCreationResponse{ public string msg; public int id; }
+        [System.Serializable] private class UserDataResponse{ public UserData data; }
+
+        [System.Serializable] private class UserData{ public int unityBestScore; }
     }
 }
